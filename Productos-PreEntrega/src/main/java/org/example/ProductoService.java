@@ -1,5 +1,6 @@
 package org.example;
 
+import java.net.SocketOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -7,8 +8,8 @@ import java.util.stream.Collectors;
 
 public class ProductoService {
     private List<Producto> productos;
-    private Scanner entrada = new Scanner(System.in);
     private Pedido pedido = new Pedido();
+    private EntradaUsuario entradaUsuario = new EntradaUsuario();
 
     public ProductoService() {
         this.productos = new ArrayList<>();
@@ -18,7 +19,7 @@ public class ProductoService {
       int opcion ;
       do {
           mostrarMenu();
-          opcion = pedirEntrada();
+          opcion = entradaUsuario.pedirEntradaUsuarioInt("");
           switch (opcion) {
               case 1 -> crearProducto();
               case 2 -> listarProductos();
@@ -37,14 +38,10 @@ public class ProductoService {
     private void crearProducto() {
         Producto p = new Producto();
         p.setId(productos.size()+1);
-        System.out.println("por favor ingrese el nombre del producto : ");
-        String nombre = entrada.next();
 
-        System.out.println("Ingrese por favor el precio del produto : ");
-        Double precio = entrada.nextDouble();
-
-        System.out.println("Ingrese la cantidad del Stock del produto : ");
-        int cantidadDeStock = entrada.nextInt();
+        String nombre = entradaUsuario.pedirEntradaUsuarioString("Por favor ingrese el nombre del producto: ");
+        Double precio = entradaUsuario.pedirEntradaUsuarioDouble("Por favor Ingrese el precio del producto: ");
+        int cantidadDeStock =  entradaUsuario.pedirEntradaUsuarioInt("Por favor ingrese la cantiadad de Stock del producto; ");
 
         p.setNombre(nombre);
         p.setPrecio(precio);
@@ -65,13 +62,13 @@ public class ProductoService {
 
     }
     private Producto buscarproducto(){
-        System.out.println("ingrese el nombre del producto por favor: ");
-        String nombre = entrada.next();
+        String nombre = entradaUsuario.pedirEntradaUsuarioString("Por favor ingrese el nombre del producto: ");
         List<Producto> p = productos.stream().filter(producto -> producto.getNombre().equals(nombre)).collect(Collectors.toList());
         if(p.isEmpty()) return  null;
         return p.get(0);
-
     }
+
+
     private void mostrarProducto(Producto p){
         if(p == null) System.out.println("el producto no exsite!!1");
         else System.out.println(p);
@@ -80,11 +77,14 @@ public class ProductoService {
 
     private void actualizarProducto() {
         Producto p = buscarproducto();
+        if (p == null) {
+            System.out.println("El producto no existe ");
+            return;
+        }
         productos.remove(p);
         System.out.println("Ingrese el nuevo precio del producto: ");
-        p.setPrecio(entrada.nextDouble());
-        System.out.println("Ingrese el nuevo stock de producto: ");
-        p.setCantidadEnStock(entrada.nextInt());
+        p.setPrecio(entradaUsuario.pedirEntradaUsuarioDouble("Por favor Ingreese el nuevo  precio del procudto: "));
+        p.setCantidadEnStock(entradaUsuario.pedirEntradaUsuarioInt("Por favor ingrese el Nuevo Stock del procduto: "));
         mostrarProducto(p);
         productos.add(p);
 
@@ -93,8 +93,11 @@ public class ProductoService {
 
     private void eliminarProducto() {
         Producto p = buscarproducto();
+        if (p == null) {
+            System.out.println("El producto no exite");
+            return;
+        }
         productos.remove(p);
-
     }
 
     private void crearPedido() {
@@ -104,7 +107,12 @@ public class ProductoService {
            }
         }
        Producto productoPedido = buscarproducto();
-        if (productoPedido.getCantidadEnStock() != 0 ) {
+       if (productoPedido == null) {
+           System.out.println("El producto no existe");
+           return;
+       }
+
+        if (productoPedido.getCantidadEnStock() != 0  ) {
             productos.remove(productoPedido);
             productoPedido.setCantidadEnStock(productoPedido.getCantidadEnStock()-1);
             productos.add(productoPedido);
@@ -122,10 +130,6 @@ public class ProductoService {
         System.out.println("fin del programa ...........");
     }
 
-    private void errorDeEntrada() {
-        System.out.println("Error en entrado , revise las opciones!!");
-    }
-
     private void mostrarMenu(){
         System.out.println("\n----------------------- MENU --------------------------- \n" +
                 "1) Crear producto\n" +
@@ -135,11 +139,9 @@ public class ProductoService {
                 "5) Eliminar producto\n" +
                 "6) Crear un pedido\n" +
                 "7) Listar pedidos\n" +
-                "8) Salir\n");
+                "8) Salir");
     }
-    private int pedirEntrada(){
-        System.out.println("Elija una opcion: ");
-        int entradausuario = entrada.nextInt();
-        return entradausuario;
+    public void errorDeEntrada(){
+        System.out.println(" ERROR ");
     }
 }
